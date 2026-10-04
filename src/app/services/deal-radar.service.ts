@@ -7,7 +7,7 @@ import { MasterProduct, CreateMasterProductDto } from '../models';
   providedIn: 'root'
 })
 export class DealRadarService {
-  private apiUrl = 'https://localhost:7197/api/MasterProducts'; // Adjust if needed
+  private apiUrl = 'https://dealradar-api.runasp.net/api/MasterProducts'; // Adjust if needed
 
   constructor(private http: HttpClient) { }
 
