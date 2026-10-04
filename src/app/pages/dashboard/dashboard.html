@@ -1,0 +1,125 @@
+<div class="container-fluid py-2 px-3 px-md-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0 text-dark">Product Deals</h3>
+            <p class="text-muted small mb-0 mt-1">Track and monitor your favorite products</p>
+        </div>
+        <button class="btn btn-light shadow-sm text-primary fw-semibold" (click)="loadProducts()" [disabled]="isLoading">
+            <i class="bi bi-arrow-clockwise" [class.spinner-border]="isLoading" [class.spinner-border-sm]="isLoading" [class.bi-arrow-clockwise]="!isLoading"></i> 
+            <span class="d-none d-sm-inline ms-1">{{ isLoading ? 'Refreshing...' : 'Refresh' }}</span>
+        </button>
+    </div>
+
+    <!-- Empty State / Loading State -->
+    <div *ngIf="isLoading && products.length === 0" class="text-center py-5 my-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="mt-4 text-muted">Loading your deals...</h5>
+    </div>
+
+    <div class="row" *ngIf="!isLoading || products.length > 0">
+        <div class="col-12">
+            <div class="card mb-4" *ngFor="let p of products; let i = index" [style.animation-delay]="i * 0.1 + 's'">
+                <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="d-flex flex-column">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h5 class="mb-0 fw-bold">{{ p.productName }}</h5>
+                            <span class="badge bg-secondary rounded-pill px-3">{{ p.category }}</span>
+                        </div>
+                        <div class="text-muted small d-flex align-items-center gap-2">
+                            <i class="bi bi-bullseye"></i> Target: <span class="fw-semibold text-dark">₹{{ p.targetPrice }}</span>
+                            <span class="mx-1">•</span>
+                            <span>{{ p.movementType }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <button class="btn btn-sm btn-light text-success border-success border-opacity-25 bg-success bg-opacity-10 fw-semibold" (click)="checkPrice(p.id)" [disabled]="isChecking[p.id]" title="Check Prices">
+                            <span *ngIf="isChecking[p.id]" class="spinner-border spinner-border-sm me-1"></span>
+                            <i *ngIf="!isChecking[p.id]" class="bi bi-tags-fill me-1"></i>
+                            <span>{{ isChecking[p.id] ? 'Checking...' : 'Check Prices' }}</span>
+                        </button>
+                        <button class="btn btn-sm btn-light text-primary" [routerLink]="['/edit-product', p.id]" title="Edit">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-danger" (click)="deleteProduct(p.id)" title="Delete">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 text-nowrap align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Website</th>
+                                    <th>Current Price</th>
+                                    <th>Effective Price</th>
+                                    <th>Margin</th>
+                                    <th>Status</th>
+                                    <th>Offers</th>
+                                    <th>Last Checked</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let link of p.links" [ngClass]="{'bg-success bg-opacity-10': link.marginAmount && link.marginAmount > 0}">
+                                    <td>
+                                        <a [href]="link.productUrl" target="_blank" class="text-decoration-none fw-semibold text-primary d-flex align-items-center gap-2">
+                                            <i class="bi bi-box-arrow-up-right small"></i>
+                                            {{ link.websiteName }}
+                                        </a>
+                                    </td>
+                                    <td class="text-muted">{{ link.currentPrice ? '₹' + link.currentPrice : '-' }}</td>
+                                    <td>
+                                        <span class="fw-bold fs-6" [ngClass]="{'text-success': link.marginAmount && link.marginAmount > 0}">
+                                            {{ link.effectivePrice ? '₹' + link.effectivePrice : '-' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column" *ngIf="link.marginAmount">
+                                            <span class="fw-semibold" [ngClass]="link.marginAmount > 0 ? 'text-success' : 'text-danger'">
+                                                {{ link.marginAmount > 0 ? '+' : '' }}₹{{ link.marginAmount }}
+                                            </span>
+                                            <span class="small text-muted">{{ link.marginPercentage }}%</span>
+                                        </div>
+                                        <span *ngIf="!link.marginAmount" class="text-muted">-</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2" [ngClass]="{'bg-success': link.dealTag === 'Excellent', 'bg-warning text-dark': link.dealTag === 'Good', 'bg-danger': link.dealTag === 'Poor', 'bg-secondary': !link.dealTag}">
+                                            {{ link.dealTag || 'Pending' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted text-truncate d-inline-block" style="max-width: 200px;" [title]="link.cardOfferSummary">
+                                            {{ link.cardOfferSummary || 'No offers' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ link.lastCheckedAt ? (link.lastCheckedAt | date:'short') : 'Never' }}
+                                    </td>
+                                </tr>
+                                <tr *ngIf="!p.links || p.links.length === 0">
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-link-45deg fs-4 d-block mb-2 text-black-50"></i>
+                                        No links tracked for this product
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div *ngIf="products.length === 0 && !isLoading" class="text-center py-5 my-4 bg-white rounded-4 shadow-sm border border-light">
+                <div class="mb-3 text-primary opacity-50">
+                    <i class="bi bi-radar" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="fw-bold text-dark">No Products Tracked</h4>
+                <p class="text-muted mb-4 max-w-md mx-auto">You haven't added any products to track yet. Start tracking your favorite deals and we'll monitor the prices for you.</p>
+                <button class="btn btn-primary btn-lg rounded-pill shadow-sm px-4" routerLink="/add-product">
+                    <i class="bi bi-plus-lg me-2"></i> Add Your First Product
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

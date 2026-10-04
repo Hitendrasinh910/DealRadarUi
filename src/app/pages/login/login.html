@@ -1,0 +1,66 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card border-0 shadow-sm rounded-4" style="max-width: 400px; width: 100%;">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold text-dark">🚀 DealRadar Login</h2>
+        <p class="text-muted small">Secure Telegram OTP Authentication</p>
+      </div>
+
+      <!-- Feedback messages -->
+      <div class="alert alert-danger py-2 small" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="alert alert-success py-2 small" *ngIf="successMessage">{{ successMessage }}</div>
+
+      <form (ngSubmit)="verifyAndLogin()">
+        <!-- Step 1: Bot Username -->
+        <div class="mb-4">
+          <label class="form-label text-muted small fw-semibold text-uppercase tracking-wide">Telegram Username <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-0 text-muted">@</span>
+            <input 
+              type="text" 
+              [(ngModel)]="username" 
+              name="username" 
+              placeholder="DealRadarBot" 
+              class="form-control bg-light border-0 shadow-none ps-2"
+              [disabled]="otpSent && isLoading"
+              required>
+          </div>
+        </div>
+
+        <div class="mb-4 text-end" *ngIf="!otpSent || (otpSent && !isLoading)">
+             <button 
+              type="button" 
+              class="btn btn-sm btn-outline-primary rounded-pill px-3" 
+              (click)="sendOtp()" 
+              [disabled]="isLoading || !username">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+              {{ otpSent ? 'Resend OTP' : 'Send OTP' }}
+            </button>
+        </div>
+
+        <!-- Step 2: 4-Digit OTP -->
+        <div class="mb-4" *ngIf="otpSent" style="animation: fadeIn 0.3s ease-out;">
+          <label class="form-label text-muted small fw-semibold text-uppercase tracking-wide">Enter 4-Digit OTP <span class="text-danger">*</span></label>
+          <p class="text-muted small mb-2" style="font-size: 0.8rem;">Check your Telegram bot for the code.</p>
+          <input 
+            type="text" 
+            maxlength="4" 
+            [(ngModel)]="otp" 
+            name="otp" 
+            placeholder="••••" 
+            class="form-control form-control-lg bg-light border-0 shadow-none text-center fw-bold fs-4 tracking-widest"
+            required>
+        </div>
+
+        <button 
+          *ngIf="otpSent" 
+          type="submit" 
+          class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mt-2" 
+          [disabled]="isLoading || otp.length !== 4">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isLoading ? 'Verifying...' : 'Login to Dashboard' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
