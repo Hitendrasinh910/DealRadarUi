@@ -19,7 +19,7 @@ export class Login {
   errorMessage: string = '';
   successMessage: string = '';
 
-  private apiUrl = 'https://localhost:7197/api/auth';
+  private apiUrl = 'https://dealradar-api.runasp.net/api/auth';
 
   constructor(private http: HttpClient, private router: Router) {}
 
