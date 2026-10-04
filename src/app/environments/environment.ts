@@ -1,4 +1,5 @@
 export const environment = {
-  production: false,
-  apiUrl: 'https://localhost:7081/api',
+  production: true,
+  apiUrl: 'https://dealradar-api.runasp.net/api',
+  apiBaseUrl: 'https://dealradar-api.runasp.net/api'
 };
