@@ -1,11 +1,9 @@
-/* Global modern overrides */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f4f7f6; /* Modern soft background */
-    color: #334155; /* Slate 700 */
+    background-color: #f4f7f6;
+    color: #334155;
 }
 
-/* Card Modernization */
 .card {
     border: none;
     border-radius: 16px;
@@ -29,7 +27,6 @@ body {
     padding: 1.5rem;
 }
 
-/* Buttons */
 .btn {
     border-radius: 8px;
     font-weight: 500;
@@ -38,12 +35,12 @@ body {
 }
 
 .btn-primary {
-    background-color: #4f46e5; /* Indigo 600 */
+    background-color: #4f46e5;
     border-color: #4f46e5;
 }
 
 .btn-primary:hover {
-    background-color: #4338ca; /* Indigo 700 */
+    background-color: #4338ca;
     border-color: #4338ca;
 }
 
@@ -62,7 +59,6 @@ body {
     border-radius: 6px;
 }
 
-/* Form inputs */
 .form-control, .form-select {
     border-radius: 8px;
     border: 1px solid #cbd5e1;
@@ -78,11 +74,10 @@ body {
 
 .form-label {
     font-weight: 500;
-    color: #475569; /* Slate 600 */
+    color: #475569;
     margin-bottom: 0.4rem;
 }
 
-/* Tables */
 .table {
     margin-bottom: 0;
     color: #334155;
@@ -93,7 +88,7 @@ body {
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
-    color: #64748b; /* Slate 500 */
+    color: #64748b;
     border-bottom-width: 1px;
     padding: 1rem 1.5rem;
     background-color: #f8fafc;
@@ -105,7 +100,6 @@ body {
     border-bottom: 1px solid #f1f5f9;
 }
 
-/* Badges */
 .badge {
     padding: 0.4em 0.8em;
     font-weight: 500;
@@ -115,23 +109,41 @@ body {
 
 .bg-primary { background-color: #4f46e5 !important; }
 .bg-success { background-color: #10b981 !important; color: white; }
-.bg-info { background-color: #e0f2fe !important; color: #0369a1 !important; } /* Light blue */
-.bg-warning { background-color: #fef08a !important; color: #854d0e !important; } /* Light yellow */
+.bg-info { background-color: #e0f2fe !important; color: #0369a1 !important; }
+.bg-warning { background-color: #fef08a !important; color: #854d0e !important; }
 .bg-danger { background-color: #ef4444 !important; color: white; }
-.bg-secondary { background-color: #f1f5f9 !important; color: #475569 !important; } /* Soft gray */
+.bg-secondary { background-color: #f1f5f9 !important; color: #475569 !important; }
 
-/* Typography */
 h4, h5, h6 {
     font-weight: 600;
-    color: #1e293b; /* Slate 800 */
+    color: #1e293b;
 }
 
-/* Utilities */
 .text-primary {
     color: #4f46e5 !important;
 }
 
-/* Animations */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.scroll-pills-row {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+    &::-webkit-scrollbar {
+        height: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -141,3 +153,25 @@ h4, h5, h6 {
     animation: fadeIn 0.4s ease-out forwards;
 }
 
+@media (max-width: 767.98px) {
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-header {
+        padding: 0.85rem 1rem;
+    }
+
+    .card-body {
+        padding: 0.85rem 1rem;
+    }
+
+    .form-control, .form-select {
+        font-size: 16px;
+    }
+
+    .btn {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.875rem;
+    }
+}

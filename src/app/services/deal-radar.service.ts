@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MasterProduct, CreateMasterProductDto } from '../models';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DealRadarService {
-  private apiUrl = 'https://dealradar-api.runasp.net/api/MasterProducts'; // Adjust if needed
+  private apiUrl = `${environment.apiBaseUrl}/MasterProducts`; // Adjust if needed
 
   constructor(private http: HttpClient) { }
 

@@ -1,124 +1,747 @@
-<div class="container-fluid py-2 px-3 px-md-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid py-2 py-md-3 px-2 px-sm-3 px-md-4">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3">
         <div>
-            <h3 class="fw-bold mb-0 text-dark">Product Deals</h3>
-            <p class="text-muted small mb-0 mt-1">Track and monitor your favorite products</p>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <h4 class="fw-bold mb-0 text-dark">Deal Radar</h4>
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 small">Live Monitor</span>
+                <span class="badge bg-white text-muted border rounded-pill px-2 py-1 small" *ngIf="lastRefreshedAtIst">
+                    <i class="bi bi-clock-history text-primary me-1"></i>{{ lastRefreshedAtIst }}
+                </span>
+            </div>
+            <!-- <p class="text-muted small mb-0 mt-1">Multi-store price drops & automated margin radar (All timestamps in IST).</p> -->
         </div>
-        <button class="btn btn-light shadow-sm text-primary fw-semibold" (click)="loadProducts()" [disabled]="isLoading">
-            <i class="bi bi-arrow-clockwise" [class.spinner-border]="isLoading" [class.spinner-border-sm]="isLoading" [class.bi-arrow-clockwise]="!isLoading"></i> 
-            <span class="d-none d-sm-inline ms-1">{{ isLoading ? 'Refreshing...' : 'Refresh' }}</span>
-        </button>
+        <div class="d-flex align-items-center gap-2 w-100 w-sm-auto mt-2 mt-sm-0">
+            <button class="btn btn-sm btn-white shadow-sm border text-muted fw-semibold flex-fill flex-sm-grow-0 py-2 px-3" (click)="loadProducts()" [disabled]="isLoading">
+                <i class="bi bi-arrow-clockwise me-1" [class.spinner-border]="isLoading" [class.spinner-border-sm]="isLoading" [class.bi-arrow-clockwise]="!isLoading"></i> 
+                <span>{{ isLoading ? 'Refreshing...' : 'Refresh' }}</span>
+            </button>
+            <a class="btn btn-sm btn-primary shadow-sm fw-semibold flex-fill flex-sm-grow-0 py-2 px-3" routerLink="/add-product">
+                <i class="bi bi-plus-lg me-1"></i> Add Product
+            </a>
+        </div>
     </div>
 
-    <!-- Empty State / Loading State -->
-    <div *ngIf="isLoading && products.length === 0" class="text-center py-5 my-5">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <h5 class="mt-4 text-muted">Loading your deals...</h5>
-    </div>
-
-    <div class="row" *ngIf="!isLoading || products.length > 0">
-        <div class="col-12">
-            <div class="card mb-4" *ngFor="let p of products; let i = index" [style.animation-delay]="i * 0.1 + 's'">
-                <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                    <div class="d-flex flex-column">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <h5 class="mb-0 fw-bold">{{ p.productName }}</h5>
-                            <span class="badge bg-secondary rounded-pill px-3">{{ p.category }}</span>
-                        </div>
-                        <div class="text-muted small d-flex align-items-center gap-2">
-                            <i class="bi bi-bullseye"></i> Target: <span class="fw-semibold text-dark">₹{{ p.targetPrice }}</span>
-                            <span class="mx-1">•</span>
-                            <span>{{ p.movementType }}</span>
-                        </div>
+    <div class="row g-2 g-md-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm p-2 p-sm-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.7rem;">Tracked Products</span>
+                        <h4 class="fw-bold text-dark mb-0 mt-1">{{ totalProductsCount }}</h4>
                     </div>
-                    <div class="d-flex align-items-center flex-wrap gap-2">
-                        <button class="btn btn-sm btn-light text-success border-success border-opacity-25 bg-success bg-opacity-10 fw-semibold" (click)="checkPrice(p.id)" [disabled]="isChecking[p.id]" title="Check Prices">
-                            <span *ngIf="isChecking[p.id]" class="spinner-border spinner-border-sm me-1"></span>
-                            <i *ngIf="!isChecking[p.id]" class="bi bi-tags-fill me-1"></i>
-                            <span>{{ isChecking[p.id] ? 'Checking...' : 'Check Prices' }}</span>
-                        </button>
-                        <button class="btn btn-sm btn-light text-primary" [routerLink]="['/edit-product', p.id]" title="Edit">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button class="btn btn-sm btn-light text-danger" (click)="deleteProduct(p.id)" title="Delete">
-                            <i class="bi bi-trash3"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 text-nowrap align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Website</th>
-                                    <th>Current Price</th>
-                                    <th>Effective Price</th>
-                                    <th>Margin</th>
-                                    <th>Status</th>
-                                    <th>Offers</th>
-                                    <th>Last Checked</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let link of p.links" [ngClass]="{'bg-success bg-opacity-10': link.marginAmount && link.marginAmount > 0}">
-                                    <td>
-                                        <a [href]="link.productUrl" target="_blank" class="text-decoration-none fw-semibold text-primary d-flex align-items-center gap-2">
-                                            <i class="bi bi-box-arrow-up-right small"></i>
-                                            {{ link.websiteName }}
-                                        </a>
-                                    </td>
-                                    <td class="text-muted">{{ link.currentPrice ? '₹' + link.currentPrice : '-' }}</td>
-                                    <td>
-                                        <span class="fw-bold fs-6" [ngClass]="{'text-success': link.marginAmount && link.marginAmount > 0}">
-                                            {{ link.effectivePrice ? '₹' + link.effectivePrice : '-' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-column" *ngIf="link.marginAmount">
-                                            <span class="fw-semibold" [ngClass]="link.marginAmount > 0 ? 'text-success' : 'text-danger'">
-                                                {{ link.marginAmount > 0 ? '+' : '' }}₹{{ link.marginAmount }}
-                                            </span>
-                                            <span class="small text-muted">{{ link.marginPercentage }}%</span>
-                                        </div>
-                                        <span *ngIf="!link.marginAmount" class="text-muted">-</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge rounded-pill px-3 py-2" [ngClass]="{'bg-success': link.dealTag === 'Excellent', 'bg-warning text-dark': link.dealTag === 'Good', 'bg-danger': link.dealTag === 'Poor', 'bg-secondary': !link.dealTag}">
-                                            {{ link.dealTag || 'Pending' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="small text-muted text-truncate d-inline-block" style="max-width: 200px;" [title]="link.cardOfferSummary">
-                                            {{ link.cardOfferSummary || 'No offers' }}
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small">
-                                        {{ link.lastCheckedAt ? (link.lastCheckedAt | date:'short') : 'Never' }}
-                                    </td>
-                                </tr>
-                                <tr *ngIf="!p.links || p.links.length === 0">
-                                    <td colspan="7" class="text-center text-muted py-4">
-                                        <i class="bi bi-link-45deg fs-4 d-block mb-2 text-black-50"></i>
-                                        No links tracked for this product
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-box-seam"></i>
                     </div>
                 </div>
             </div>
-            
-            <div *ngIf="products.length === 0 && !isLoading" class="text-center py-5 my-4 bg-white rounded-4 shadow-sm border border-light">
-                <div class="mb-3 text-primary opacity-50">
-                    <i class="bi bi-radar" style="font-size: 4rem;"></i>
+        </div>
+
+        <div class="col-6 col-lg-3 cursor-pointer" (click)="setStatusFilter('CARD_TO_CASH')" title="Click to filter Card to Cash Deals">
+            <div class="card h-100 border-0 shadow-sm p-2 p-sm-3 transition-all" [ngClass]="{'border border-2 border-primary': selectedStatus === 'CARD_TO_CASH'}">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                            Card to Cash
+                            <span class="badge bg-primary text-white rounded-pill px-1" style="font-size: 0.6rem;">±2%</span>
+                        </span>
+                        <h4 class="fw-bold text-primary mb-0 mt-1">{{ tagCounts.cardToCash }}</h4>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-credit-card-2-front-fill"></i>
+                    </div>
                 </div>
-                <h4 class="fw-bold text-dark">No Products Tracked</h4>
-                <p class="text-muted mb-4 max-w-md mx-auto">You haven't added any products to track yet. Start tracking your favorite deals and we'll monitor the prices for you.</p>
-                <button class="btn btn-primary btn-lg rounded-pill shadow-sm px-4" routerLink="/add-product">
-                    <i class="bi bi-plus-lg me-2"></i> Add Your First Product
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3 cursor-pointer" (click)="setStatusFilter('ALERT_DEALS')" title="Click to filter all alert-triggering deals">
+            <div class="card h-100 border-0 shadow-sm p-2 p-sm-3 transition-all" [ngClass]="{'border border-2 border-success': selectedStatus === 'ALERT_DEALS'}">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.7rem;">Loot & Profit</span>
+                        <h4 class="fw-bold text-success mb-0 mt-1">{{ tagCounts.loot10 + tagCounts.loot510 + tagCounts.profit }}</h4>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm p-2 p-sm-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.7rem;">Top Margin</span>
+                        <h4 class="fw-bold text-indigo mb-0 mt-1">₹{{ maxProfitAmount | number:'1.0-0' }}</h4>
+                    </div>
+                    <div class="stat-icon bg-indigo bg-opacity-10 text-indigo rounded-3 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm p-2 p-sm-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+            <div class="d-flex align-items-center gap-1">
+                <i class="bi bi-tags-fill text-primary small"></i>
+                <span class="fw-bold small text-uppercase text-muted" style="font-size: 0.75rem;">Status Tags:</span>
+            </div>
+            <span class="small text-muted" *ngIf="selectedStatus !== 'ALL'" style="font-size: 0.72rem;">
+                Filter: <strong class="text-primary">{{ selectedStatus }}</strong>
+            </span>
+        </div>
+        <div class="scroll-pills-row">
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all flex-shrink-0"
+                    [ngClass]="selectedStatus === 'ALL' ? 'btn-dark text-white shadow-sm' : 'btn-light text-muted border'"
+                    (click)="setStatusFilter('ALL')">
+                All Deals
+            </button>
+
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all fw-semibold flex-shrink-0"
+                    [ngClass]="selectedStatus === 'CARD_TO_CASH' ? 'btn-primary text-white shadow-sm' : 'btn-light text-primary border border-primary border-opacity-25'"
+                    (click)="setStatusFilter('CARD_TO_CASH')">
+                <i class="bi bi-credit-card-2-front-fill me-1"></i> 💳 Card to Cash (Small Profit)
+                <span class="badge ms-1" [ngClass]="selectedStatus === 'CARD_TO_CASH' ? 'bg-white text-primary' : 'bg-primary text-white'">{{ tagCounts.cardToCash }}</span>
+            </button>
+
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all fw-semibold flex-shrink-0"
+                    [ngClass]="selectedStatus === 'LOOT_10' ? 'btn-danger text-white shadow-sm' : 'btn-light text-danger border border-danger border-opacity-25'"
+                    (click)="setStatusFilter('LOOT_10')">
+                <i class="bi bi-fire me-1"></i> 💥 Loot Deal (10%+)
+                <span class="badge ms-1" [ngClass]="selectedStatus === 'LOOT_10' ? 'bg-white text-danger' : 'bg-danger text-white'">{{ tagCounts.loot10 }}</span>
+            </button>
+
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all fw-semibold flex-shrink-0"
+                    [ngClass]="selectedStatus === 'LOOT_5_10' ? 'btn-warning text-dark shadow-sm' : 'btn-light text-warning text-dark border'"
+                    (click)="setStatusFilter('LOOT_5_10')">
+                <i class="bi bi-lightning-charge-fill me-1"></i> 🔥 Loot Deal (5-10%)
+                <span class="badge ms-1" [ngClass]="selectedStatus === 'LOOT_5_10' ? 'bg-white text-dark' : 'bg-warning text-dark'">{{ tagCounts.loot510 }}</span>
+            </button>
+
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all fw-semibold flex-shrink-0"
+                    [ngClass]="selectedStatus === 'PROFIT_DEAL' ? 'btn-success text-white shadow-sm' : 'btn-light text-success border border-success border-opacity-25'"
+                    (click)="setStatusFilter('PROFIT_DEAL')">
+                <i class="bi bi-cash-coin me-1"></i> 💰 Profit Deal (2-5%)
+                <span class="badge ms-1" [ngClass]="selectedStatus === 'PROFIT_DEAL' ? 'bg-white text-success' : 'bg-success text-white'">{{ tagCounts.profit }}</span>
+            </button>
+
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all flex-shrink-0"
+                    [ngClass]="selectedStatus === 'ABOVE_TARGET' ? 'btn-secondary text-white shadow-sm' : 'btn-light text-muted border'"
+                    (click)="setStatusFilter('ABOVE_TARGET')">
+                <i class="bi bi-x-circle me-1"></i> ❌ Above Target
+                <span class="badge ms-1" [ngClass]="selectedStatus === 'ABOVE_TARGET' ? 'bg-white text-secondary' : 'bg-secondary text-white'">{{ tagCounts.aboveTarget }}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm p-2 p-sm-3 mb-3">
+        <div class="d-flex align-items-center gap-1 mb-2">
+            <i class="bi bi-shop text-primary small"></i>
+            <span class="fw-bold small text-uppercase text-muted" style="font-size: 0.75rem;">Stores:</span>
+        </div>
+        <div class="scroll-pills-row">
+            <button type="button" 
+                    class="btn btn-sm rounded-pill px-3 transition-all flex-shrink-0"
+                    [ngClass]="selectedWebsite === 'ALL' ? 'btn-primary shadow-sm text-white' : 'btn-light text-muted border'"
+                    (click)="setWebsiteFilter('ALL')">
+                <i class="bi bi-grid-fill me-1"></i> All Stores 
+                <span class="badge ms-1" [ngClass]="selectedWebsite === 'ALL' ? 'bg-white text-primary' : 'bg-secondary text-white'">{{ totalLinksCount }}</span>
+            </button>
+
+            <button type="button" 
+                    *ngFor="let site of websiteStats"
+                    class="btn btn-sm rounded-pill px-3 transition-all flex-shrink-0"
+                    [ngClass]="selectedWebsite.toLowerCase() === site.name.toLowerCase() ? 'btn-dark shadow-sm text-white' : 'btn-light text-dark border'"
+                    (click)="setWebsiteFilter(site.name)">
+                <i class="bi" [ngClass]="getWebsiteBadgeColor(site.name).icon"></i>
+                <span class="ms-1">{{ site.name }}</span>
+                <span class="badge ms-1" [ngClass]="selectedWebsite.toLowerCase() === site.name.toLowerCase() ? 'bg-primary text-white' : 'bg-light text-muted border'">{{ site.count }}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm p-2 p-sm-3 mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control bg-light border-start-0 shadow-none ps-0" 
+                           placeholder="Search product, category, or store..." 
+                           [(ngModel)]="searchTerm" 
+                           (ngModelChange)="applyFilters()">
+                    <button class="btn btn-light border" type="button" *ngIf="searchTerm" (click)="searchTerm = ''; applyFilters()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-auto d-md-none">
+                <button type="button" 
+                        class="btn btn-sm d-flex align-items-center gap-1 border"
+                        [ngClass]="getActiveFilterCount() > 0 ? 'btn-primary text-white' : 'btn-light text-dark'"
+                        (click)="toggleMobileFilters()">
+                    <i class="bi bi-sliders"></i>
+                    <span class="d-none d-sm-inline">Filters</span>
+                    <span class="badge bg-white text-primary rounded-pill px-1" *ngIf="getActiveFilterCount() > 0">
+                        {{ getActiveFilterCount() }}
+                    </span>
                 </button>
+            </div>
+        </div>
+
+        <div [class.d-none]="!isMobileFiltersOpen" class="d-md-block mt-2 pt-2 border-top">
+            <div class="row g-2 align-items-center">
+                <div class="col-6 col-md-3 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Website</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="selectedWebsite" (ngModelChange)="applyFilters()">
+                        <option value="ALL">All Websites</option>
+                        <option *ngFor="let s of websiteStats" [value]="s.name">{{ s.name }} ({{ s.count }})</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Deal Status</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="selectedStatus" (ngModelChange)="applyFilters()">
+                        <option value="ALL">All Statuses</option>
+                        <option value="CARD_TO_CASH">💳 Card to Cash (Small Profit)</option>
+                        <option value="LOOT_10">💥 Loot Deal (10%+ Profit)</option>
+                        <option value="LOOT_5_10">🔥 Loot Deal (5% - 10%)</option>
+                        <option value="PROFIT_DEAL">💰 Profit Deal (2% - 5%)</option>
+                        <option value="ALERT_DEALS">🔔 All Alert Deals</option>
+                        <option value="ABOVE_TARGET">❌ Above Target Price</option>
+                        <option value="PENDING">⏳ Pending Scan</option>
+                        <option value="IN_STOCK">📦 In Stock Only</option>
+                        <option value="OUT_OF_STOCK">❌ Out of Stock</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Movement</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="selectedMovementType" (ngModelChange)="applyFilters()">
+                        <option value="ALL">All Movements</option>
+                        <option *ngFor="let m of movementTypes" [value]="m">{{ m }}</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Category</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="selectedCategory" (ngModelChange)="applyFilters()">
+                        <option value="ALL">All Categories</option>
+                        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Min Profit (₹)</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="selectedMargin" (ngModelChange)="applyFilters()">
+                        <option value="ALL">All Margins (₹)</option>
+                        <option value="0">Margin > ₹0</option>
+                        <option value="500">Margin ≥ ₹500</option>
+                        <option value="1000">Margin ≥ ₹1,000</option>
+                        <option value="2000">Margin ≥ ₹2,000</option>
+                        <option value="5000">Margin ≥ ₹5,000</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-4 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Min Margin (%)</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="selectedPercentage" (ngModelChange)="applyFilters()">
+                        <option value="ALL">All Percentages (%)</option>
+                        <option value="0">Margin > 0%</option>
+                        <option value="2">Margin ≥ 2%</option>
+                        <option value="5">Margin ≥ 5%</option>
+                        <option value="10">Margin ≥ 10%</option>
+                        <option value="20">Margin ≥ 20%</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-4 col-xl">
+                    <label class="form-label text-muted d-md-none small mb-1">Sort By</label>
+                    <select class="form-select form-select-sm bg-light border-0 shadow-none" [(ngModel)]="sortBy" (ngModelChange)="applyFilters()">
+                        <option value="MARGIN_DESC">Highest Margin (₹)</option>
+                        <option value="PERCENT_DESC">Highest Margin (%)</option>
+                        <option value="PRICE_ASC">Lowest Effective Price</option>
+                        <option value="NEWEST">Newest Added</option>
+                        <option value="NAME_ASC">Product Name (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                <span class="text-muted small" style="font-size: 0.75rem;">
+                    Showing <strong>{{ filteredProducts.length }}</strong> of {{ products.length }} products
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" *ngIf="hasActiveFilters()" (click)="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="isLoading && products.length === 0" class="text-center py-5 my-5">
+        <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h6 class="mt-3 text-muted">Fetching latest deals...</h6>
+    </div>
+
+    <div *ngIf="!isLoading || products.length > 0">
+        <div class="card mb-3 mb-md-4 border-0 shadow-sm" *ngFor="let p of filteredProducts; let i = index">
+            <div class="card-header bg-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 py-3 px-3 px-md-4">
+                <div class="d-flex flex-column">
+                    <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                        <h5 class="mb-0 fw-bold text-dark">{{ p.productName }}</h5>
+                        <span class="badge bg-secondary rounded-pill px-2 py-1 small">{{ p.category }}</span>
+                        <span class="badge rounded-pill px-2 py-1 small cursor-pointer" 
+                              [ngClass]="selectedMovementType === p.movementType ? 'bg-dark text-white shadow-sm' : (p.movementType === 'Fast Move' ? 'bg-danger bg-opacity-10 text-danger' : 'bg-light text-muted border')"
+                              (click)="setMovementFilter(p.movementType)"
+                              title="Filter by {{ p.movementType }}">
+                            <i class="bi bi-speedometer2 me-1"></i>{{ p.movementType }}
+                        </span>
+                    </div>
+                    <div class="text-muted small d-flex align-items-center flex-wrap gap-2">
+                        <span class="d-flex align-items-center gap-1">
+                            <i class="bi bi-bullseye text-primary"></i> Target: <strong class="text-dark">₹{{ p.targetPrice | number:'1.0-0' }}</strong>
+                        </span>
+                        <span class="mx-1">•</span>
+                        <span>{{ (p.links || []).length }} Store Links</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-1 gap-sm-2 align-self-end align-self-sm-auto mt-1 mt-sm-0">
+                    <button class="btn btn-sm btn-success bg-opacity-10 text-success border-success border-opacity-25 fw-semibold px-2 px-sm-3 py-1" 
+                            (click)="checkPrice(p.id)" 
+                            [disabled]="isChecking[p.id]" 
+                            title="Scan prices now">
+                        <span *ngIf="isChecking[p.id]" class="spinner-border spinner-border-sm me-1"></span>
+                        <i *ngIf="!isChecking[p.id]" class="bi bi-arrow-repeat me-1"></i>
+                        <span>{{ isChecking[p.id] ? 'Scanning...' : 'Scan Prices' }}</span>
+                    </button>
+                    <button class="btn btn-sm btn-light border text-primary px-2 px-sm-3 py-1" [routerLink]="['/edit-product', p.id]" title="Edit Product">
+                        <i class="bi bi-pencil-square"></i>
+                        <span class="d-none d-sm-inline ms-1">Edit</span>
+                    </button>
+                    <button class="btn btn-sm btn-light border text-danger px-2 px-sm-3 py-1" (click)="deleteProduct(p.id)" title="Delete Product">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive d-none d-lg-block">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 14%;">Website</th>
+                                <th style="width: 11%;">Current Price</th>
+                                <th style="width: 12%;">Discounts</th>
+                                <th style="width: 12%;">Effective Price</th>
+                                <th style="width: 12%;">Margin / Profit</th>
+                                <th style="width: 16%;">Deal Status Tag</th>
+                                <th style="width: 11%;">Offers</th>
+                                <th style="width: 12%;">Links & IST Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let link of getVisibleLinks(p)" [ngClass]="{
+                                'table-success bg-success bg-opacity-10': link.marginAmount && link.marginAmount > 0,
+                                'table-info bg-primary bg-opacity-10': getDealTagBadgeInfo(link.dealTag).isCardToCash
+                            }">
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge rounded-pill px-2 py-1" 
+                                                  [style.background-color]="getWebsiteBadgeColor(link.websiteName).bg" 
+                                                  [style.color]="getWebsiteBadgeColor(link.websiteName).text">
+                                                <i class="bi" [ngClass]="getWebsiteBadgeColor(link.websiteName).icon"></i>
+                                                {{ link.websiteName || 'Unknown' }}
+                                            </span>
+                                        </div>
+                                        <span class="badge rounded-pill px-2 py-0 align-self-start" style="font-size: 0.7rem;" [ngClass]="link.isInStock === false ? 'bg-danger text-white' : 'bg-light text-muted border'">
+                                            {{ link.isInStock === false ? 'Out of Stock' : 'In Stock' }}
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="text-muted fw-semibold">{{ link.currentPrice ? '₹' + (link.currentPrice | number:'1.0-0') : '-' }}</span>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column small">
+                                        <span *ngIf="link.couponDiscount" class="text-success">
+                                            <i class="bi bi-ticket-perforated"></i> -₹{{ link.couponDiscount | number:'1.0-0' }}
+                                        </span>
+                                        <span *ngIf="link.maxCardDiscount" class="text-primary">
+                                            <i class="bi bi-credit-card"></i> -₹{{ link.maxCardDiscount | number:'1.0-0' }}
+                                        </span>
+                                        <span *ngIf="!link.couponDiscount && !link.maxCardDiscount" class="text-muted">No discount</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold fs-6" [ngClass]="link.marginAmount && link.marginAmount > 0 ? 'text-success' : 'text-dark'">
+                                            {{ link.effectivePrice ? '₹' + (link.effectivePrice | number:'1.0-0') : '-' }}
+                                        </span>
+                                        <small class="text-muted" *ngIf="link.effectivePrice && link.currentPrice && link.effectivePrice < link.currentPrice">
+                                            Save ₹{{ (link.currentPrice - link.effectivePrice) | number:'1.0-0' }}
+                                        </small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column" *ngIf="link.marginAmount !== null && link.marginAmount !== undefined">
+                                        <span class="fw-bold" [ngClass]="link.marginAmount > 0 ? 'text-success' : (link.marginAmount >= - (p.targetPrice * 0.02) ? 'text-primary' : 'text-danger')">
+                                            {{ link.marginAmount > 0 ? '+' : '' }}₹{{ link.marginAmount | number:'1.0-0' }}
+                                        </span>
+                                        <span class="small" [ngClass]="link.marginPercentage && link.marginPercentage > 0 ? 'text-success' : 'text-muted'">
+                                            {{ link.marginPercentage }}% Margin
+                                        </span>
+                                    </div>
+                                    <span *ngIf="link.marginAmount === null || link.marginAmount === undefined" class="text-muted">-</span>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column align-items-start gap-1">
+                                        <span class="badge rounded-pill px-3 py-1" [ngClass]="getDealTagBadgeInfo(link.dealTag).cssClass">
+                                            <i class="bi me-1" [ngClass]="getDealTagBadgeInfo(link.dealTag).icon"></i>
+                                            {{ getDealTagBadgeInfo(link.dealTag).text }}
+                                        </span>
+                                        <small class="text-muted" *ngIf="getDealTagBadgeInfo(link.dealTag).isCardToCash" style="font-size: 0.7rem;">
+                                            Credit card milestone / points deal
+                                        </small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div *ngIf="link.cardOfferSummary" class="d-flex flex-column align-items-start gap-1">
+                                        <span class="small text-muted text-truncate d-inline-block" style="max-width: 130px;" [title]="link.cardOfferSummary">
+                                            {{ link.cardOfferSummary }}
+                                        </span>
+                                        <button class="btn btn-sm btn-link p-0 text-primary small text-decoration-none fw-semibold" (click)="openOfferModal(p, link)">
+                                            <i class="bi bi-info-circle me-1"></i> View Details
+                                        </button>
+                                    </div>
+                                    <span *ngIf="!link.cardOfferSummary" class="text-muted small">None</span>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <a [href]="link.productUrl" target="_blank" class="btn btn-sm btn-light border py-0 px-2" title="Visit Direct Store Page">
+                                                <i class="bi bi-box-arrow-up-right small text-primary"></i>
+                                            </a>
+                                            <div *ngIf="link.affiliateUrl" class="d-flex align-items-center gap-1 flex-grow-1">
+                                                <a [href]="link.affiliateUrl" target="_blank" class="btn btn-sm btn-primary bg-opacity-10 text-primary border-primary border-opacity-25 py-0 px-2 text-truncate" style="font-size: 0.75rem;" title="Buy via Affiliate Link">
+                                                    Affiliate
+                                                </a>
+                                                <button class="btn btn-sm btn-light border py-0 px-1" (click)="copyAffiliateUrl(link.affiliateUrl)" title="Copy Affiliate URL">
+                                                    <i class="bi bi-copy small"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="text-muted small d-flex align-items-center gap-1" style="font-size: 0.72rem;" [title]="formatIstTime(link.lastCheckedAt)">
+                                            <i class="bi bi-clock"></i>
+                                            <span>{{ formatTimeAgo(link.lastCheckedAt) }}</span>
+                                            <span class="badge bg-light text-muted border px-1" style="font-size: 0.6rem;">IST</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr *ngIf="getVisibleLinks(p).length === 0">
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="bi bi-funnel fs-4 d-block mb-1 text-muted"></i>
+                                    No links match the selected filter criteria for this product.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-block d-lg-none p-2 p-sm-3">
+                    <div class="row g-2 g-sm-3">
+                        <div class="col-12" *ngFor="let link of getVisibleLinks(p)">
+                            <div class="card border rounded-3 p-3 shadow-none bg-light bg-opacity-50" [ngClass]="{
+                                'border-success border-2': link.marginAmount && link.marginAmount > 0,
+                                'border-primary border-2': getDealTagBadgeInfo(link.dealTag).isCardToCash
+                            }">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill px-2 py-1 small" 
+                                              [style.background-color]="getWebsiteBadgeColor(link.websiteName).bg" 
+                                              [style.color]="getWebsiteBadgeColor(link.websiteName).text">
+                                            <i class="bi" [ngClass]="getWebsiteBadgeColor(link.websiteName).icon"></i>
+                                            {{ link.websiteName || 'Unknown Store' }}
+                                        </span>
+                                        <span class="badge rounded-pill px-2 py-0" style="font-size: 0.68rem;" [ngClass]="link.isInStock === false ? 'bg-danger text-white' : 'bg-success bg-opacity-10 text-success border border-success border-opacity-25'">
+                                            {{ link.isInStock === false ? 'Out of Stock' : 'In Stock' }}
+                                        </span>
+                                    </div>
+                                    <span class="badge rounded-pill px-2 py-1 small" [ngClass]="getDealTagBadgeInfo(link.dealTag).cssClass">
+                                        <i class="bi me-1" [ngClass]="getDealTagBadgeInfo(link.dealTag).icon"></i>
+                                        {{ getDealTagBadgeInfo(link.dealTag).text }}
+                                    </span>
+                                </div>
+
+                                <div class="row g-1 text-center bg-white rounded-3 p-2 border mb-2">
+                                    <div class="col-4 border-end mobile-price-box">
+                                        <div class="text-muted small" style="font-size: 0.7rem;">Listed</div>
+                                        <div class="fw-semibold text-muted small">{{ link.currentPrice ? '₹' + (link.currentPrice | number:'1.0-0') : '-' }}</div>
+                                    </div>
+                                    <div class="col-4 border-end mobile-price-box">
+                                        <div class="text-muted small" style="font-size: 0.7rem;">Target</div>
+                                        <div class="fw-semibold text-dark small">₹{{ p.targetPrice | number:'1.0-0' }}</div>
+                                    </div>
+                                    <div class="col-4 mobile-price-box">
+                                        <div class="text-muted small" style="font-size: 0.7rem;">Effective</div>
+                                        <div class="fw-bold small" [ngClass]="link.marginAmount && link.marginAmount > 0 ? 'text-success' : 'text-dark'">
+                                            {{ link.effectivePrice ? '₹' + (link.effectivePrice | number:'1.0-0') : '-' }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center p-2 rounded-2 mb-2" 
+                                     [ngClass]="link.marginAmount && link.marginAmount > 0 ? 'bg-success bg-opacity-10 text-success' : (getDealTagBadgeInfo(link.dealTag).isCardToCash ? 'bg-primary bg-opacity-10 text-primary' : 'bg-secondary bg-opacity-10 text-muted')">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <i class="bi" [ngClass]="link.marginAmount && link.marginAmount > 0 ? 'bi-graph-up-arrow text-success' : (getDealTagBadgeInfo(link.dealTag).isCardToCash ? 'bi-credit-card-2-front-fill text-primary' : 'bi-dash-circle text-muted')"></i>
+                                        <span class="small fw-semibold" style="font-size: 0.75rem;">
+                                            {{ getDealTagBadgeInfo(link.dealTag).isCardToCash ? 'Card to Cash Margin:' : 'Estimated Margin:' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold" [ngClass]="link.marginAmount && link.marginAmount > 0 ? 'text-success' : (getDealTagBadgeInfo(link.dealTag).isCardToCash ? 'text-primary' : 'text-muted')">
+                                            {{ link.marginAmount && link.marginAmount > 0 ? '+' : '' }}{{ link.marginAmount ? '₹' + (link.marginAmount | number:'1.0-0') : '₹0' }}
+                                        </span>
+                                        <span class="small ms-1" *ngIf="link.marginPercentage">({{ link.marginPercentage }}%)</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2" *ngIf="link.cardOfferSummary">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-muted small fw-semibold" style="font-size: 0.75rem;">Bank Offers:</span>
+                                        <button class="btn btn-sm btn-link p-0 text-primary small text-decoration-none" (click)="openOfferModal(p, link)">
+                                            View Details
+                                        </button>
+                                    </div>
+                                    <div class="p-2 bg-white rounded border small text-muted text-truncate" style="font-size: 0.75rem;">
+                                        <i class="bi bi-tag-fill text-warning me-1"></i> {{ link.cardOfferSummary }}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a [href]="link.productUrl" target="_blank" class="btn btn-sm btn-outline-secondary flex-fill rounded-pill text-truncate py-2">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Open Store
+                                    </a>
+
+                                    <a *ngIf="link.affiliateUrl" [href]="link.affiliateUrl" target="_blank" class="btn btn-sm btn-primary flex-fill rounded-pill text-truncate py-2 shadow-sm">
+                                        <i class="bi bi-share me-1"></i> Affiliate Link
+                                    </a>
+
+                                    <button *ngIf="link.affiliateUrl" type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-2" (click)="copyAffiliateUrl(link.affiliateUrl)" title="Copy Affiliate URL">
+                                        <i class="bi bi-copy"></i>
+                                    </button>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center text-muted small mt-2 pt-2 border-top" style="font-size: 0.7rem;">
+                                    <span>
+                                        <i class="bi bi-clock-history me-1"></i> Checked: {{ formatTimeAgo(link.lastCheckedAt) }}
+                                    </span>
+                                    <span class="badge bg-white text-muted border">
+                                        {{ formatIstTime(link.lastCheckedAt) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-center text-muted py-3" *ngIf="getVisibleLinks(p).length === 0">
+                            No links match the selected filter criteria for this product.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="filteredProducts.length === 0 && products.length > 0" class="card border-0 shadow-sm text-center py-5 my-4">
+            <div class="text-muted mb-3">
+                <i class="bi bi-funnel text-secondary opacity-50" style="font-size: 3rem;"></i>
+            </div>
+            <h6 class="fw-bold text-dark">No Products Match Your Filters</h6>
+            <p class="text-muted small mb-3">No deals found for the selected status or filters. Try adjusting your query.</p>
+            <div>
+                <button class="btn btn-sm btn-primary rounded-pill px-4 py-2" (click)="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Clear All Filters
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="products.length === 0 && !isLoading" class="text-center py-5 my-4 bg-white rounded-4 shadow-sm border border-light">
+            <div class="mb-3 text-primary opacity-50">
+                <i class="bi bi-radar" style="font-size: 3.5rem;"></i>
+            </div>
+            <h5 class="fw-bold text-dark">No Products Tracked</h5>
+            <p class="text-muted small mb-4 max-w-md mx-auto">Start tracking products across Amazon, Flipkart, and more. When prices drop below your target price, Telegram alerts trigger automatically.</p>
+            <a class="btn btn-primary rounded-pill shadow-sm px-4 py-2" routerLink="/add-product">
+                <i class="bi bi-plus-lg me-2"></i> Add Your First Product
+            </a>
+        </div>
+    </div>
+
+    <div class="modal-backdrop-custom" *ngIf="isOfferModalOpen" (click)="closeOfferModal()">
+        <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-white border-bottom p-3 p-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-pill px-2 py-1 small" 
+                              [style.background-color]="getWebsiteBadgeColor(activeOfferLink?.websiteName).bg" 
+                              [style.color]="getWebsiteBadgeColor(activeOfferLink?.websiteName).text">
+                            <i class="bi" [ngClass]="getWebsiteBadgeColor(activeOfferLink?.websiteName).icon"></i>
+                            {{ activeOfferLink?.websiteName || 'Store' }}
+                        </span>
+                        <h6 class="modal-title fw-bold text-dark mb-0 text-truncate" style="max-width: 200px;">{{ activeOfferProduct?.productName }}</h6>
+                    </div>
+                    <button type="button" class="btn-close" (click)="closeOfferModal()" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-3 p-md-4">
+                    <div class="d-flex align-items-center justify-content-between p-2 p-md-3 rounded-3 mb-3" 
+                         [ngClass]="activeOfferLink?.dealTag?.toLowerCase()?.includes('card to cash') ? 'bg-primary bg-opacity-10 text-primary' : 'bg-light border'">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi fs-5" [ngClass]="getDealTagBadgeInfo(activeOfferLink?.dealTag).icon"></i>
+                            <div>
+                                <span class="fw-bold small">{{ getDealTagBadgeInfo(activeOfferLink?.dealTag).text }}</span>
+                                <div class="small text-muted" *ngIf="getDealTagBadgeInfo(activeOfferLink?.dealTag).isCardToCash" style="font-size: 0.72rem;">
+                                    Margin within ±2% of target price (Perfect for credit card rewards & cashout).
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge bg-white text-dark border px-2 py-1 small">
+                            {{ activeOfferProduct?.movementType }}
+                        </span>
+                    </div>
+
+                    <div class="bg-light rounded-3 p-3 mb-3 border">
+                        <h6 class="fw-bold mb-2 text-dark d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                            <i class="bi bi-calculator text-primary"></i> Price & Margin Breakdown
+                        </h6>
+                        <div class="row g-2 small">
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted" style="font-size: 0.72rem;">Target Price:</span>
+                                <div class="fw-bold text-dark">₹{{ activeOfferProduct?.targetPrice | number:'1.0-0' }}</div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted" style="font-size: 0.72rem;">Listed Store Price:</span>
+                                <div class="fw-semibold text-muted">₹{{ activeOfferLink?.currentPrice | number:'1.0-0' }}</div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted" style="font-size: 0.72rem;">Coupon Discount:</span>
+                                <div class="fw-semibold text-success">-₹{{ (activeOfferLink?.couponDiscount || 0) | number:'1.0-0' }}</div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted" style="font-size: 0.72rem;">Card Discount:</span>
+                                <div class="fw-semibold text-info text-dark">-₹{{ (activeOfferLink?.maxCardDiscount || 0) | number:'1.0-0' }}</div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted" style="font-size: 0.72rem;">Effective Buy Price:</span>
+                                <div class="fw-bold text-primary">₹{{ activeOfferLink?.effectivePrice | number:'1.0-0' }}</div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted" style="font-size: 0.72rem;">Net Margin / Profit:</span>
+                                <div class="fw-bold" [ngClass]="(activeOfferLink?.marginAmount || 0) > 0 ? 'text-success' : 'text-danger'">
+                                    {{ (activeOfferLink?.marginAmount || 0) > 0 ? '+' : '' }}₹{{ activeOfferLink?.marginAmount | number:'1.0-0' }} ({{ activeOfferLink?.marginPercentage }}%)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2 text-dark d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                            <i class="bi bi-credit-card-2-front text-primary"></i> Detected Bank Offers & Discounts
+                        </h6>
+                        <div *ngIf="parseOffers(activeOfferLink?.cardOfferSummary).length > 0" class="d-flex flex-column gap-2">
+                            <div class="card border rounded-3 p-2 bg-white shadow-none" *ngFor="let offer of parseOffers(activeOfferLink?.cardOfferSummary)">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                        <i class="bi bi-percent small"></i>
+                                    </div>
+                                    <div class="fw-semibold text-dark small">{{ offer }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="parseOffers(activeOfferLink?.cardOfferSummary).length === 0" class="alert alert-light border text-muted small mb-0 py-2">
+                            No special bank discounts or card offers were parsed for this product link.
+                        </div>
+                    </div>
+
+                    <div class="bg-light rounded-3 p-2 p-md-3 mb-3 border">
+                        <h6 class="fw-bold mb-2 text-dark d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                            <i class="bi bi-clock-history text-primary"></i> Indian Standard Time (IST) Scan Details
+                        </h6>
+                        <div class="row g-2 small">
+                            <div class="col-sm-6">
+                                <span class="text-muted" style="font-size: 0.72rem;">Last Checked (IST):</span>
+                                <div class="fw-semibold text-dark small">
+                                    {{ formatIstTime(activeOfferLink?.lastCheckedAt) }}
+                                </div>
+                            </div>
+                            <div class="col-sm-6" *ngIf="activeOfferLink?.lastAlertedAt">
+                                <span class="text-muted" style="font-size: 0.72rem;">Telegram Alert Sent (IST):</span>
+                                <div class="fw-semibold text-success small">
+                                    {{ formatIstTime(activeOfferLink?.lastAlertedAt) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light rounded-3 p-2 p-md-3 border">
+                        <h6 class="fw-bold mb-2 text-dark d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                            <i class="bi bi-link-45deg text-primary"></i> Link Destinations
+                        </h6>
+
+                        <div class="mb-2" *ngIf="activeOfferLink?.affiliateUrl">
+                            <label class="form-label text-muted small fw-semibold mb-1" style="font-size: 0.72rem;">
+                                <i class="bi bi-share text-primary"></i> Affiliate URL (Used in Telegram):
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control bg-white small" [value]="activeOfferLink?.affiliateUrl" readonly>
+                                <button class="btn btn-outline-secondary" type="button" (click)="copyAffiliateUrl(activeOfferLink?.affiliateUrl)" title="Copy URL">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                                <a [href]="activeOfferLink?.affiliateUrl" target="_blank" class="btn btn-primary" title="Open Affiliate URL">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label text-muted small fw-semibold mb-1" style="font-size: 0.72rem;">
+                                <i class="bi bi-globe text-secondary"></i> Direct Product Scraping URL:
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control bg-white small" [value]="activeOfferLink?.productUrl" readonly>
+                                <a [href]="activeOfferLink?.productUrl" target="_blank" class="btn btn-outline-secondary" title="Visit Direct Page">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light p-2 p-md-3 border-top">
+                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4 py-2 w-100 w-sm-auto" (click)="closeOfferModal()">Close</button>
+                </div>
             </div>
         </div>
     </div>

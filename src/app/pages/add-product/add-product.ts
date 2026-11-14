@@ -57,17 +57,16 @@ export class AddProduct implements OnInit {
           movementType: product.movementType
         });
 
-        // Clear existing default link
         while (this.links.length !== 0) {
           this.links.removeAt(0);
         }
 
-        // Add links from product
         if (product.links && product.links.length > 0) {
           product.links.forEach((link: any) => {
             this.links.push(this.fb.group({
               websiteName: [link.websiteName || ''],
-              productUrl: [link.productUrl || '', Validators.required]
+              productUrl: [link.productUrl || '', Validators.required],
+              affiliateUrl: [link.affiliateUrl || '']
             }));
           });
         } else {
@@ -87,8 +86,9 @@ export class AddProduct implements OnInit {
 
   createLinkGroup(): FormGroup {
     return this.fb.group({
-      websiteName: [''], // Can be auto-detected
-      productUrl: ['', Validators.required]
+      websiteName: [''],
+      productUrl: ['', Validators.required],
+      affiliateUrl: ['']
     });
   }
 

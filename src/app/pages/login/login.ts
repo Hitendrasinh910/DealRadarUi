@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment.prod';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +20,7 @@ export class Login {
   errorMessage: string = '';
   successMessage: string = '';
 
-  private apiUrl = 'https://dealradar-api.runasp.net/api/auth';
+  private apiUrl = `${environment.apiBaseUrl}/auth`;
 
   constructor(private http: HttpClient, private router: Router) {}
 

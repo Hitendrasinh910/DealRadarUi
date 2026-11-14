@@ -14,6 +14,7 @@ export interface ProductLink {
     masterProductId?: number;
     websiteName: string;
     productUrl: string;
+    affiliateUrl?: string;
     currentPrice?: number;
     couponDiscount?: number;
     maxCardDiscount?: number;
@@ -23,6 +24,7 @@ export interface ProductLink {
     marginPercentage?: number;
     dealTag?: string;
     lastAlertedPrice?: number;
+    lastAlertedAt?: string;
     isInStock?: boolean;
     lastCheckedAt?: string;
 }
@@ -38,4 +40,5 @@ export interface CreateMasterProductDto {
 export interface CreateProductLinkDto {
     websiteName: string;
     productUrl: string;
+    affiliateUrl?: string;
 }
