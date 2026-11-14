@@ -117,14 +117,28 @@
 }
 
 .modal-dialog-custom .modal-content {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
 }
 
+.modal-dialog-custom .modal-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
 .modal-dialog-custom .modal-body {
+    background-color: #ffffff !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+.modal-dialog-custom .modal-footer {
+    background-color: #f8fafc !important;
+    border-top: 1px solid #f1f5f9 !important;
 }
 
 @keyframes slideUp {
